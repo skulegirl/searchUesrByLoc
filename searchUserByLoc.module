@@ -1,0 +1,128 @@
+<?php
+
+function searchUserByLoc_form($node, &$form_state) 
+{
+  dd('In searchUserByLoc_form');
+
+  // Get Lattitude, longitude, and distance in miles
+  $form['location'] = array(
+	'#type' => 'fieldset',
+	'#title' => t('Search Location'),
+	'#tree' => TRUE,
+  );
+
+  $form['location']['locationstring'] = array(
+	'#type' => 'textfield',
+	'#title' => t('Location (city, state/province, country)'),
+	'#default_value' =>  variable_get('locationstring', ''),
+	'#description' => t('For best results, include a town/city name and enter the full name of the state/province rather than an abbreviation.'),
+	'#size' => 40,
+	'#required' => TRUE,
+  );
+
+  $form['location']['distance'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Search distance'),
+        '#default_value' =>  variable_get('distance', 100),
+        '#size' => 3,
+        '#maxlength' => 4,
+        '#required' => TRUE,
+  );
+
+  $form['location']['distance_unit'] = array(
+        '#type' => 'select',
+        '#default_value' =>  variable_get('distance_unit', 'mi'),
+        '#description' => t('The search radius to use around your specified location.'),
+        '#options' => array(
+	   'mi' => t('miles'),
+           'km'    => t('km'),
+        ),
+  );
+
+  $form['optional_params'] = array(
+  	'#type' => 'fieldset',
+	'#title' => t('Optional Search Parameters'),
+	'#tree' => TRUE,
+  );
+
+  $form['optional_params']['max_rv_size'] = array(
+  	'#type' => 'select',
+	'#title' => t('Size of boondocking space'),
+	'#default_value' => variable_get('max_rv_size', '20+25+30+35+40+100 '),
+	'#description' => t('Limit the search results to sites that can accommodate your RV. For example, if your rig is 28 feet long, choose "25 feet and up".'), 
+	'#options' => array(
+	  '20+25+30+35+40+100' 	=> t('show all sizes'),
+	  '25+30+35+40+100' 	=> t('20 feet and up'),
+	  '30+35+40+100' 	=> t('25 feet and up'),
+	  '35+40+100'  	       	=> t('30 feet and up'),
+	  '40+100'		=> t('35 feet and up'),
+	  '100'			=> t('40 feet and up'),
+	),
+  );
+
+  $form['optional_params']['pull_through_parking'] = array(
+  	'#type' => 'checkbox',
+	'#title' => t('Show only sites with pullthrough parking'),
+	'#default_value' => variable_get('pull_through_parking','0'),
+  );
+
+  $form['optional_params']['slideouts'] = array(
+  	'#type' => 'checkbox',
+	'#title' => t('Show only sites that allow slideouts or awnings'),
+	'#default_value' => variable_get('slideouts','0'),
+  );
+
+  $form['optional_params']['generators'] = array(
+  	'#type' => 'checkbox',
+	'#title' => t('Show only sites that allow a generator'),
+	'#default_value' => variable_get('generators','0'),
+  );
+
+  $form['optional_params']['pets'] = array(
+  	'#type' => 'checkbox',
+	'#title' => t('Show only sites that welcome pets'),
+	'#default_value' => variable_get('pets','0'),
+  );
+
+  $form['submit'] = array('#type' => 'submit', '#value' => t('Search'));
+  
+  return $form;
+}
+
+function searchUserByLoc_form_submit($form, &$form_state) {
+  $locstring = $form_state['values']['location']['locationstring'];
+  $query = array('query' => $locstring, 'maxrows' => 1);
+  $result = geonames_query('search', $query);
+
+  if ($result->total_results_count == 0) 
+  { 
+       $errstring = 'Location <em>' . $locstring . '</em> could not be found; please try another location';
+       form_set_error('NULL', $errstring );
+       return;
+  }
+
+  $lat = $result->results[0]['lat'];
+  $lng = $result->results[0]['lng'];
+
+  $unit = $form_state['values']['location']['distance_unit'];
+  $distance = $form_state['values']['location']['distance'];
+  if ($unit != 'mi')
+  {
+       $distance = $distance * 0.621371192 ; // conversion to miles : 0.621371192  miles / km
+  }
+  $new_url = url($path, array('absolute' => TRUE)) . 'SearchLocationResults/' . $lat . "," . $lng . "_" . $distance;
+  
+  // Add optional parameters as arguments - defaults should be already in
+  foreach ($form_state['values']['optional_params'] as $key => $value)
+  {
+    if ($form['optional_params'][$key]['#type'] == 'checkbox')
+    {
+      $value = $value ? 'Yes' : 'all';
+    }
+    $new_url = $new_url . '/' . $value;
+  }
+
+  // send to view url with arguments
+  $form_state['redirect'] = $new_url;
+}
+?>

@@ -1,0 +1,5 @@
+name = searchUserByLoc
+description = Logic to search users by location. Custom module by ANNA.
+version = "7.x-dev"
+project = "searchUserByLoc"
+core = "7.x"
