@@ -2,8 +2,6 @@
 
 function searchUserByLoc_form($node, &$form_state) 
 {
-  dd('In searchUserByLoc_form');
-
   // Get Lattitude, longitude, and distance in miles
   $form['location'] = array(
 	'#type' => 'fieldset',
