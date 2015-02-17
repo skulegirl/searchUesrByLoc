@@ -2,6 +2,8 @@
 
 function searchUserByLoc_form($node, &$form_state) 
 {
+  module_load_include('inc', 'BDW_custom_changes');
+  $basepath = '/sites/boondockerswelcome.com/files/media/iconsets/services/';
   // Get Lattitude, longitude, and distance in miles
   $form['location'] = array(
 	'#type' => 'fieldset',
@@ -22,6 +24,7 @@ function searchUserByLoc_form($node, &$form_state)
         '#type' => 'textfield',
         '#title' => t('Search distance'),
         '#default_value' =>  variable_get('distance', 100),
+        '#prefix' => "<div class='distance-input'>",
         '#size' => 3,
         '#maxlength' => 4,
         '#required' => TRUE,
@@ -30,56 +33,138 @@ function searchUserByLoc_form($node, &$form_state)
   $form['location']['distance_unit'] = array(
         '#type' => 'select',
         '#default_value' =>  variable_get('distance_unit', 'mi'),
-        '#description' => t('The search radius to use around your specified location.'),
+        '#suffix' => "</div>", // end of distance-input div
         '#options' => array(
-	   'mi' => t('miles'),
-           'km'    => t('km'),
+          'mi' => t('miles'),
+          'km'    => t('km'),
         ),
+  );
+
+  $form['location']['distance_description'] = array(
+    '#type' => 'item',
+    '#markup' => t('The search radius to use around your specified location.'),
   );
 
   $form['optional_params'] = array(
   	'#type' => 'fieldset',
-	'#title' => t('Optional Search Parameters'),
-	'#tree' => TRUE,
+    '#title' => t('Optional Search Parameters'),
+    '#tree' => TRUE,
   );
 
   $form['optional_params']['max_rv_size'] = array(
   	'#type' => 'select',
-	'#title' => t('Size of boondocking space'),
-	'#default_value' => variable_get('max_rv_size', '20+25+30+35+40+100 '),
-	'#description' => t('Limit the search results to sites that can accommodate your RV. For example, if your rig is 28 feet long, choose "25 feet and up".'), 
-	'#options' => array(
-	  '20+25+30+35+40+100' 	=> t('show all sizes'),
-	  '25+30+35+40+100' 	=> t('20 feet and up'),
-	  '30+35+40+100' 	=> t('25 feet and up'),
-	  '35+40+100'  	       	=> t('30 feet and up'),
-	  '40+100'		=> t('35 feet and up'),
-	  '100'			=> t('40 feet and up'),
-	),
+    '#title' => t('Size of boondocking space:'),
+    '#prefix' => "<div class='search-option rv-size'>" . _BDW_get_services_icon($basepath . 'rv-size-icon.png', 'min RV Size in Feet', TRUE, 'size'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('max_rv_size', '20+25+30+35+40+100 '),
+    '#description' => t('Limit the search results to sites that can accommodate your RV. For example, if your rig is 28 feet long, choose "25 feet and up".'), 
+    '#options' => array(
+      '20+25+30+35+40+100' 	=> t('show all sizes'),
+      '25+30+35+40+100' 	=> t('20 feet and up'),
+      '30+35+40+100' 	=> t('25 feet and up'),
+      '35+40+100'  	       	=> t('30 feet and up'),
+      '40+100'		=> t('35 feet and up'),
+      '100'			=> t('40 feet and up'),
+    ),
   );
 
-  $form['optional_params']['pull_through_parking'] = array(
+  $form['optional_params']['more_than_one_rv'] = array (
   	'#type' => 'checkbox',
-	'#title' => t('Show only sites with pullthrough parking'),
-	'#default_value' => variable_get('pull_through_parking','0'),
+    '#title' => t('Show only sites with space for more than one RV'),
+    '#prefix' => "<div class='search-option rv-count'>" . _BDW_get_services_icon($basepath . 'rv-count-icon.png', 'Number of RV spaces', TRUE, '>1'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('more_than_one_rv','0'),
   );
 
-  $form['optional_params']['slideouts'] = array(
-  	'#type' => 'checkbox',
-	'#title' => t('Show only sites that allow slideouts or awnings'),
-	'#default_value' => variable_get('slideouts','0'),
+  $form['optional_params']['require_services'] = array (
+  	'#type' => 'fieldset',
+    '#title' => t('Show only sites that provide:'),
+    '#tree' => TRUE,
   );
 
-  $form['optional_params']['generators'] = array(
+  $form['optional_params']['require_services']['pull_through_parking'] = array(
   	'#type' => 'checkbox',
-	'#title' => t('Show only sites that allow a generator'),
-	'#default_value' => variable_get('generators','0'),
+    '#title' => t('pullthrough parking'),
+    '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'pull-through-parking-icon.png', 'Pull Through Parking Available'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('pull_through_parking','0'),
   );
 
-  $form['optional_params']['pets'] = array(
+
+  $form['optional_params']['require_services']['electric_hookup'] = array(
   	'#type' => 'checkbox',
-	'#title' => t('Show only sites that welcome pets'),
-	'#default_value' => variable_get('pets','0'),
+    '#title' => t('electric hookup'),
+    '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'power-icon.png', 'Electric Hookup Available'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('electric_hookup','0'),
+  );
+
+  $form['optional_params']['require_services']['water_hookup'] = array(
+  	'#type' => 'checkbox',
+    '#title' => t('water hookup'),
+    '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'water-icon.png', 'Water Hookup Available'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('water_hookup','0'),
+  );
+
+  $form['optional_params']['require_allowances'] = array (
+  	'#type' => 'fieldset',
+    '#title' => t('Show only sites that allow:'),
+    '#tree' => TRUE,
+  );
+  $form['optional_params']['require_allowances']['slideouts'] = array(
+  	'#type' => 'checkbox',
+    '#title' => t('slideouts or awnings'),
+    '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'slideouts-icon.png', 'Slideouts and Awnings Allowed'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('slideouts','0'),
+  );
+
+  $form['optional_params']['require_allowances']['generators'] = array(
+  	'#type' => 'checkbox',
+    '#title' => t('generators'),
+    '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'generator-icon.png', 'Generators Allowed'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('generators','0'),
+  );
+
+  $form['optional_params']['require_allowances']['pets'] = array(
+  	'#type' => 'checkbox',
+    '#title' => t('pets'),
+    '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'pets-icon.png', 'Pets Allowed'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('pets','0'),
+  );
+
+  $form['optional_params']['group_memberships'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Show only members who belong to all of the following groups:',
+    '#tree' => TRUE,
+  );
+
+  $basepath = '/media/iconsets/groupbadges/';
+  $form['optional_params']['group_memberships']['fmca'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('FMCA'),
+    '#prefix' => "<div class='membership-group'>" . _BDW_get_membership_icon($basepath . 'fmca_member_icon.png', 'FMCA Member'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('fmca', '0'),
+  );
+    
+  $form['optional_params']['group_memberships']['escapee'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Escapees'),
+    '#prefix' => "<div class='membership-group'>" . _BDW_get_membership_icon($basepath . 'escapee_member_icon.png', 'Escapee Member'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('escapee', '0'),
+  );
+    
+  $form['optional_params']['group_memberships']['rvillage'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('RVillage'),
+    '#prefix' => "<div class='membership-group'>" . _BDW_get_membership_icon($basepath . 'rvillage_member_icon.png', 'RVillage Member'),
+    '#suffix' => "</div>",
+    '#default_value' => variable_get('rvillage', '0'),
   );
 
   $form['submit'] = array('#type' => 'submit', '#value' => t('Search'));
@@ -108,19 +193,52 @@ function searchUserByLoc_form_submit($form, &$form_state) {
   {
        $distance = $distance * 0.621371192 ; // conversion to miles : 0.621371192  miles / km
   }
-  $new_url = url($path, array('absolute' => TRUE)) . 'SearchLocationResults/' . $lat . "," . $lng . "_" . $distance;
+  $new_url = url() . 'SearchLocationResults/' . $lat . "," . $lng . "_" . $distance;
   
   // Add optional parameters as arguments - defaults should be already in
+  
   foreach ($form_state['values']['optional_params'] as $key => $value)
   {
-    if ($form['optional_params'][$key]['#type'] == 'checkbox')
+    if ($key == 'require_services' || $key == 'require_allowances' || $key == 'group_memberships') 
     {
-      $value = $value ? 'Yes' : 'all';
+      // Then we have another fieldset
+      foreach ($form_state['values']['optional_params'][$key] as $key2 => $value2)
+      {
+        _tranform_value($form['optional_params'][$key][$key2]['#type'], $key2, $value2);
+        $new_url = $new_url . '/' . $value2;
+      }
     }
-    $new_url = $new_url . '/' . $value;
+    else
+    {
+      _tranform_value($form['optional_params'][$key]['#type'], $key, $value);
+      $new_url = $new_url . '/' . $value;
+    }
   }
 
   // send to view url with arguments
   $form_state['redirect'] = $new_url;
+}
+
+function _tranform_value($type, $key, &$value) {
+  if ($key == 'more_than_one_rv')
+  {
+    $value = $value ? '2,3,4,5,6,7,8,9,10' : 'all';
+    return;
+  }
+
+  if ($type == 'checkbox')
+  {
+    switch ($key) {
+      case 'fmca':
+      case 'escapee':
+      case 'rvillage':
+        $value = $value ? '1' : 'all';
+        break;
+      default:
+        $value = $value ? 'Yes' : 'all';
+        break;
+    }
+  }
+
 }
 ?>
