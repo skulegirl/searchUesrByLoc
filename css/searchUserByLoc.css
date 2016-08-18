@@ -1,0 +1,173 @@
+/* Search by Location input form */
+
+form#searchuserbyloc-form .form-item-optional-params-location-distance {
+  display: inline;
+}
+
+form#searchuserbyloc-form input#edit-optional-params-location-distance {
+  float: left;
+  margin: 5px 10px 0 0;
+}
+
+form#searchuserbyloc-form .form-item-optional-params-location-distance-unit {
+  margin: 5px 10px 0 0;
+}
+
+form#searchuserbyloc-form select#edit-optional-params-location-distance-unit {
+  font-size: large;
+}
+
+form#searchuserbyloc-form #edit-optional-params-location-distance-description {
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+@media screen and (min-width: 860px) {
+  form#searchuserbyloc-form .search-option,
+  form#searchuserbyloc-form .membership-group {
+    display: inline-block;
+    width: 33%;
+  }
+}
+
+
+
+form#searchuserbyloc-form .search-option.rv-count,
+form#searchuserbyloc-form .search-option.rv-size {
+  width: 100%;
+}
+
+form#searchuserbyloc-form .form-type-select {
+  display: inline-block;
+}
+
+
+form#searchuserbyloc-form .form-type-checkbox {
+  display: inline;
+}
+form#searchuserbyloc-form .ServiceIcon {
+  float: left;
+}
+form#searchuserbyloc-form .search-option {
+  clear: both;
+}
+
+
+form#searchuserbyloc-form .ServiceIcon img,
+form#searchuserbyloc-form .MembershipBadge img {
+  height: 60px;
+  width: auto;
+  vertical-align: middle;
+  padding-right: 5px;
+}
+
+@media screen and (max-width: 860px) {
+  form#searchuserbyloc-form .MembershipBadge img {
+    width: 60px;
+    height: auto;
+  }
+}
+
+form#searchuserbyloc-form .ServiceIcon,
+form#searchuserbyloc-form .MembershipBadge {
+  display: inline-block;
+  position: relative;
+  padding: 0px 5px;
+}
+
+@media screen and (max-width: 520px) {
+  form#searchuserbyloc-form .rv-count .ServiceIcon {
+    float: left;
+  }
+}
+
+@media screen and (min-width:636px) and (max-width: 1000px) {
+  form#searchuserbyloc-form .rv-size .description,
+  form#searchuserbyloc-form .rv-count .description {
+    max-width: 500px;
+  }
+}
+
+@media screen and (min-width:351px) and (max-width: 635px) {
+  form#searchuserbyloc-form .rv-size .description {
+    max-width: 250px;
+  }
+}
+@media screen and (max-width: 350px) {
+  form#searchuserbyloc-form .rv-size label,
+  form#searchuserbyloc-form .rv-size .description {
+    max-width: 180px;
+  }
+}
+
+@media screen and (max-width: 860px) {
+  form#searchuserbyloc-form .ServiceIcon,
+  form#searchuserbyloc-form .MembershipBadge {
+    padding: 5px 5px;
+  }
+}
+
+form#searchuserbyloc-form .ServiceIcon h3 {
+  position: absolute;
+  top: 5px;
+  width: 85%;
+  text-align: center;
+  color: white;
+  font-size: 12px;
+}
+
+form#searchuserbyloc-form select#edit-optional-params-max-rv-size {
+  font-size: large;
+}
+
+form#searchuserbyloc-form .rv-size .ServiceIcon img {
+  vertical-align: inherit;
+}
+
+form#searchuserbyloc-form fieldset {
+  clear: both;
+}
+
+form#searchuserbyloc-form input#edit-optional-params-submit {
+  padding: 5px 20px;
+  font-size: large;
+  color: #3b4520;
+  border: 1px solid #3b4520;
+}
+
+form#searchuserbyloc-form fieldset.collapsible {
+  box-shadow: none;
+  -webkit-box-shadow: none;
+}
+
+form#searchuserbyloc-form fieldset#edit-optional-params.collapsible > legend {
+  width: 100%;
+  padding: 0;
+  background-color: #ab832b;
+}
+
+
+form#searchuserbyloc-form fieldset#edit-optional-params legend a.fieldset-title {
+  color: white;
+}
+
+html.js form#searchuserbyloc-form fieldset#edit-optional-params.collapsible > legend span.fieldset-legend {
+  background-image: url(up_arrow.png);
+  padding-left: 35px;
+}
+
+html.js form#searchuserbyloc-form fieldset#edit-optional-params.collapsed > legend span.fieldset-legend {
+  background-image: url(down_arrow.png);
+}
+
+@media screen and (min-width:800px) { 
+  .page-hostlocations .gmap-control { 
+    height: 500px !important; 
+  } 
+} 
+@media screen and (max-width:475px) { 
+  .page-hostlocations .gmap-control { 
+  } 
+} 
+
+

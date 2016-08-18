@@ -4,60 +4,29 @@ function searchUserByLoc_form($node, &$form_state)
 {
   module_load_include('inc', 'BDW_custom_changes');
   $basepath = '/sites/boondockerswelcome.com/files/media/iconsets/services/';
-  // Get Lattitude, longitude, and distance in miles
-  $form['location'] = array(
-	'#type' => 'fieldset',
-	'#title' => t('Search Location'),
-	'#tree' => TRUE,
-  );
 
-  $form['location']['locationstring'] = array(
-	'#type' => 'textfield',
-	'#title' => t('Location (city, state/province, country)'),
-	'#default_value' =>  variable_get('locationstring', ''),
-	'#description' => t('For best results, include a town/city name and enter the full name of the state/province rather than an abbreviation.'),
-	'#size' => 40,
-	'#required' => TRUE,
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'searchUserByLoc') . '/css/searchUserByLoc.css',
   );
-
-  $form['location']['distance'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Search distance'),
-        '#default_value' =>  variable_get('distance', 100),
-        '#prefix' => "<div class='distance-input'>",
-        '#size' => 3,
-        '#maxlength' => 4,
-        '#required' => TRUE,
-  );
-
-  $form['location']['distance_unit'] = array(
-        '#type' => 'select',
-        '#default_value' =>  variable_get('distance_unit', 'mi'),
-        '#suffix' => "</div>", // end of distance-input div
-        '#options' => array(
-          'mi' => t('miles'),
-          'km'    => t('km'),
-        ),
-  );
-
-  $form['location']['distance_description'] = array(
-    '#type' => 'item',
-    '#markup' => t('The search radius to use around your specified location.'),
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'searchUserByLoc') . '/js/gmap_remember_zoom.js',
   );
 
   $form['optional_params'] = array(
-  	'#type' => 'fieldset',
+    '#type' => 'fieldset',
+    '#collapsible' => 'TRUE',
+    '#collapsed' => 'TRUE',
     '#title' => t('Optional Search Parameters'),
     '#tree' => TRUE,
   );
 
   $form['optional_params']['max_rv_size'] = array(
-  	'#type' => 'select',
+    '#type' => 'select',
     '#title' => t('Size of boondocking space:'),
     '#prefix' => "<div class='search-option rv-size'>" . _BDW_get_services_icon($basepath . 'rv-size-icon.png', 'min RV Size in Feet', TRUE, 'size'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('max_rv_size', '20+25+30+35+40+100 '),
-    '#description' => t('Limit the search results to sites that can accommodate your RV. For example, if your rig is 28 feet long, choose "25 feet and up".'), 
+    '#default_value' => arg(1) ?: '20+25+30+35+40+100',
+    '#description' => t('Limit the search results to sites that can accommodate your RV. For example, if your rig is 28 feet long, choose "25 feet and up".'),
     '#options' => array(
       '20+25+30+35+40+100' 	=> t('show all sizes'),
       '25+30+35+40+100' 	=> t('20 feet and up'),
@@ -69,13 +38,56 @@ function searchUserByLoc_form($node, &$form_state)
   );
 
   $form['optional_params']['more_than_one_rv'] = array (
-  	'#type' => 'checkbox',
+    '#type' => 'checkbox',
     '#title' => t('Show only sites with space for more than one RV'),
     '#prefix' => "<div class='search-option rv-count'>" . _BDW_get_services_icon($basepath . 'rv-count-icon.png', 'Number of RV spaces', TRUE, '>1'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('more_than_one_rv','0'),
+    '#default_value' => arg(2) && arg(2) != 'all' ? '1' : '0',
   );
 
+  // Get Lattitude, longitude, and distance in miles
+  $form['optional_params']['location'] = array(
+	'#type' => 'fieldset',
+	'#title' => t('Search Location'),
+	'#tree' => TRUE,
+  );
+
+  $form['optional_params']['location']['locationstring'] = array(
+	'#type' => 'textfield',
+	'#title' => t('Location (city, state/province, country)'),
+	'#default_value' =>  arg(3) && arg(3) != 'all' ? arg(3) : '',
+	'#description' => t('For best results, include a town/city name and enter the full name of the state/province rather than an abbreviation.'),
+	'#size' => 35,
+  );
+
+  if (arg(5)) {
+    $distance_arg = explode("_", arg(5));
+  } else {
+    $distance_arg = NULL;
+  }
+  $form['optional_params']['location']['distance'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Search distance'),
+        '#default_value' =>  $distance_arg ? $distance_arg[0] : 100,
+        '#prefix' => "<div class='distance-input'>",
+        '#size' => 3,
+        '#maxlength' => 4,
+  );
+
+  $form['optional_params']['location']['distance_unit'] = array(
+        '#type' => 'select',
+        '#default_value' =>  $distance_arg ? $distance_arg[1] : 'mi',
+        '#suffix' => "</div>", // end of distance-input div
+        '#options' => array(
+          'mi' => t('miles'),
+          'km'    => t('km'),
+        ),
+  );
+
+  $form['optional_params']['location']['distance_description'] = array(
+    '#type' => 'item',
+    '#markup' => t('The search radius to use around your specified location.'),
+  );
   $form['optional_params']['require_services'] = array (
   	'#type' => 'fieldset',
     '#title' => t('Show only sites that provide:'),
@@ -83,57 +95,57 @@ function searchUserByLoc_form($node, &$form_state)
   );
 
   $form['optional_params']['require_services']['pull_through_parking'] = array(
-  	'#type' => 'checkbox',
+    '#type' => 'checkbox',
     '#title' => t('pullthrough parking'),
     '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'pull-through-parking-icon.png', 'Pull Through Parking Available'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('pull_through_parking','0'),
+    '#default_value' => arg(6) && arg(6) == 'Yes' ? '1' : '0',
   );
 
 
   $form['optional_params']['require_services']['electric_hookup'] = array(
-  	'#type' => 'checkbox',
+    '#type' => 'checkbox',
     '#title' => t('electric hookup'),
     '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'power-icon.png', 'Electric Hookup Available'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('electric_hookup','0'),
+    '#default_value' => arg(7) && arg(7) == 'Yes' ? '1' : '0',
   );
 
   $form['optional_params']['require_services']['water_hookup'] = array(
-  	'#type' => 'checkbox',
+    '#type' => 'checkbox',
     '#title' => t('water hookup'),
     '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'water-icon.png', 'Water Hookup Available'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('water_hookup','0'),
+    '#default_value' => arg(8) && arg(8) == 'Yes' ? '1' : '0',
   );
 
   $form['optional_params']['require_allowances'] = array (
-  	'#type' => 'fieldset',
+    '#type' => 'fieldset',
     '#title' => t('Show only sites that allow:'),
     '#tree' => TRUE,
   );
   $form['optional_params']['require_allowances']['slideouts'] = array(
-  	'#type' => 'checkbox',
+    '#type' => 'checkbox',
     '#title' => t('slideouts or awnings'),
     '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'slideouts-icon.png', 'Slideouts and Awnings Allowed'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('slideouts','0'),
+    '#default_value' => arg(9) && arg(9) == 'Yes' ? '1' : '0',
   );
 
   $form['optional_params']['require_allowances']['generators'] = array(
-  	'#type' => 'checkbox',
+    '#type' => 'checkbox',
     '#title' => t('generators'),
     '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'generator-icon.png', 'Generators Allowed'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('generators','0'),
+    '#default_value' => arg(10) && arg(10) == 'Yes' ? '1' : '0',
   );
 
   $form['optional_params']['require_allowances']['pets'] = array(
-  	'#type' => 'checkbox',
+    '#type' => 'checkbox',
     '#title' => t('pets'),
     '#prefix' => "<div class='search-option'>" . _BDW_get_services_icon($basepath . 'pets-icon.png', 'Pets Allowed'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('pets','0'),
+    '#default_value' => arg(11) && arg(11) == 'Yes' ? '1' : '0',
   );
 
   $form['optional_params']['group_memberships'] = array(
@@ -148,58 +160,41 @@ function searchUserByLoc_form($node, &$form_state)
     '#title' => t('FMCA'),
     '#prefix' => "<div class='membership-group'>" . _BDW_get_membership_icon($basepath . 'fmca_member_icon.png', 'FMCA Member'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('fmca', '0'),
+    '#default_value' => arg(12) ?: '0',
   );
-    
+
   $form['optional_params']['group_memberships']['escapee'] = array(
     '#type' => 'checkbox',
     '#title' => t('Escapees'),
     '#prefix' => "<div class='membership-group'>" . _BDW_get_membership_icon($basepath . 'escapee_member_icon.png', 'Escapee Member'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('escapee', '0'),
+    '#default_value' => arg(13) ?: '0',
   );
-    
+
   $form['optional_params']['group_memberships']['rvillage'] = array(
     '#type' => 'checkbox',
     '#title' => t('RVillage'),
     '#prefix' => "<div class='membership-group'>" . _BDW_get_membership_icon($basepath . 'rvillage_member_icon.png', 'RVillage Member'),
     '#suffix' => "</div>",
-    '#default_value' => variable_get('rvillage', '0'),
+    '#default_value' => arg(14) ?: '0',
   );
 
-  $form['submit'] = array('#type' => 'submit', '#value' => t('Search'));
-  
+  $form['optional_params']['submit'] = array('#type' => 'submit', '#value' => t('Search'));
+
+  $form['optional_params']['footer_text'] = array(
+    '#markup' => "<div style='font-size:10px'>Search powered by <a href='http://www.geonames.org/'>GeoNames</a> geographical database.</div>",
+  );
   return $form;
 }
 
 function searchUserByLoc_form_submit($form, &$form_state) {
-  $locstring = $form_state['values']['location']['locationstring'];
-  $query = array('query' => $locstring, 'maxrows' => 1);
-  $result = geonames_query('search', $query);
-
-  if ($result->total_results_count == 0) 
-  { 
-       $errstring = 'Location <em>' . $locstring . '</em> could not be found; please try another location';
-       form_set_error('NULL', $errstring );
-       return;
-  }
-
-  $lat = $result->results[0]['lat'];
-  $lng = $result->results[0]['lng'];
-
-  $unit = $form_state['values']['location']['distance_unit'];
-  $distance = $form_state['values']['location']['distance'];
-  if ($unit != 'mi')
-  {
-       $distance = $distance * 0.621371192 ; // conversion to miles : 0.621371192  miles / km
-  }
-  $new_url = url() . 'SearchLocationResults/' . $lat . "," . $lng . "_" . $distance;
-  
+  $new_url = url() . 'hostlocations';
+ 
   // Add optional parameters as arguments - defaults should be already in
-  
+
   foreach ($form_state['values']['optional_params'] as $key => $value)
   {
-    if ($key == 'require_services' || $key == 'require_allowances' || $key == 'group_memberships') 
+    if ($key == 'require_services' || $key == 'require_allowances' || $key == 'group_memberships')
     {
       // Then we have another fieldset
       foreach ($form_state['values']['optional_params'][$key] as $key2 => $value2)
@@ -223,6 +218,37 @@ function _tranform_value($type, $key, &$value) {
   if ($key == 'more_than_one_rv')
   {
     $value = $value ? '2,3,4,5,6,7,8,9,10' : 'all';
+    return;
+  }
+
+  if ($key == 'location') {
+    $locstring = $value['locationstring'];
+    $newvalue = '';
+    if (!empty($locstring)) {
+      $query = array('query' => $locstring, 'maxrows' => 1);
+      $result = geonames_query('search', $query);
+
+      if ($result->total_results_count == 0) { 
+           $errstring = 'Location <em>' . $locstring . '</em> could not be found; please try another location';
+           form_set_error('NULL', $errstring );
+           $newvalue = 'all/all';
+      }
+      else {
+        $lat = $result->results[0]['lat'];
+        $lng = $result->results[0]['lng'];
+
+        $unit = $value['distance_unit'];
+        $distance = $value['distance'];
+        if ($unit != 'mi')
+        {
+             $distance = $distance * 0.621371192 ; // conversion to miles : 0.621371192  miles / km
+        }
+        $newvalue = $locstring . '/' . $lat . "," . $lng . "_" . $distance;
+      }
+    } else {
+      $newvalue = 'all/all';
+    }
+    $value = $newvalue . '/' . $value['distance'] . '_' . $value['distance_unit'];
     return;
   }
 
