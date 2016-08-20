@@ -34,7 +34,7 @@
                 'zoom': obj.vars.zoom
               };
               var cookiename = 'gmapsavedpos_' + location.pathname;      
-              $.cookie(cookiename, JSON.stringify(centerJSON), {expire: 1});
+              $.cookie(cookiename, JSON.stringify(centerJSON), {expires: 1/48});
             }
           } 
           obj.bind('move', saveposition);
