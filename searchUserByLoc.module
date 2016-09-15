@@ -16,7 +16,7 @@ function searchUserByLoc_form($node, &$form_state)
     '#type' => 'fieldset',
     '#collapsible' => 'TRUE',
     '#collapsed' => 'TRUE',
-    '#title' => t('Optional Search Parameters'),
+    '#title' => t('Filter Search Results to Suit Your Needs'),
     '#tree' => TRUE,
   );
 
